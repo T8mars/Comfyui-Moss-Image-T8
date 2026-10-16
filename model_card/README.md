@@ -37,7 +37,7 @@ Download each selected weight **together with its matching `.assets` directory**
 2. From the ComfyUI directory, download models into `models/` with the directory structure preserved:
 
 ```bash
-hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" "text_encoders/*" "vae/*"
+hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" --include "text_encoders/*" --include "vae/*"
 ```
 
 3. Restart ComfyUI and drag a [SFT workflow PNG](example_workflows/moss-image-sft.png) or [Base workflow PNG](example_workflows/moss-image-base.png) onto the canvas. [JSON workflows](https://github.com/T8mars/Comfyui-Moss-Image-T8/tree/main/example_workflows) are also available.

@@ -24,7 +24,7 @@ Requires Python 3.10+, PyTorch 2.9+, Diffusers 0.38–0.41 and Transformers 5.3+
 Download from [t8star/Moss-Image-Comfy](https://huggingface.co/t8star/Moss-Image-Comfy/tree/main) into `ComfyUI/models`, preserving the directory structure. This command downloads both variants and their shared components:
 
 ```bash
-hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" "text_encoders/*" "vae/*"
+hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" --include "text_encoders/*" --include "vae/*"
 ```
 
 `hf` is installed by `huggingface_hub`; use its executable in your ComfyUI Python environment. To download SFT only, replace `"diffusion_models/*"` with `"diffusion_models/moss-image-sft-bf16.safetensors*"`.

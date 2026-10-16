@@ -24,7 +24,7 @@ python -m pip install -r custom_nodes/Comfyui-Moss-Image-T8/requirements.txt
 从 [t8star/Moss-Image-Comfy](https://huggingface.co/t8star/Moss-Image-Comfy/tree/main) 下载到 `ComfyUI/models`，保留目录结构。以下命令下载两个版本和共用组件：
 
 ```bash
-hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" "text_encoders/*" "vae/*"
+hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" --include "text_encoders/*" --include "vae/*"
 ```
 
 `hf` 随 `huggingface_hub` 安装，请调用 ComfyUI Python 环境中的可执行文件。只需要 SFT 时，将 `"diffusion_models/*"` 换成 `"diffusion_models/moss-image-sft-bf16.safetensors*"`。

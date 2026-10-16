@@ -21,7 +21,7 @@
 2. 在 ComfyUI 根目录下载，保留目录结构：
 
 ```bash
-hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" "text_encoders/*" "vae/*"
+hf download t8star/Moss-Image-Comfy --local-dir models --include "diffusion_models/*" --include "text_encoders/*" --include "vae/*"
 ```
 
 3. 重启 ComfyUI，将 [SFT 工作流 PNG](example_workflows/moss-image-sft.png) 或 [Base 工作流 PNG](example_workflows/moss-image-base.png) 拖入画布。也可使用 [JSON 工作流](https://github.com/T8mars/Comfyui-Moss-Image-T8/tree/main/example_workflows)。
