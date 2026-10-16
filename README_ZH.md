@@ -65,7 +65,7 @@ ComfyUI/models/
 
 ![MOSS-Image SFT，1024×1024，50 步](docs/examples/sft-quality.png)
 
-Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致。测试覆盖管道一致性、采样、文件完整性、设备选择、取消、验证工具及 Windows 启动器。详见[实测记录](docs/validation.md)、[第一批审查](docs/review-20-rounds.md)、[第二批审查](docs/review-20-rounds-2.md)与[架构及来源](docs/architecture.md)。
+Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致。测试覆盖管道一致性、采样、文件完整性、设备选择、取消、验证工具及 Windows 启动器。详见[实测记录](docs/validation.md)、[最新审查](docs/review-20-rounds-3.md)与[架构及来源](docs/architecture.md)。
 
 ## 致谢与许可
 
