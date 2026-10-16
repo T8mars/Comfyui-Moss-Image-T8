@@ -31,6 +31,8 @@ Independent **DiT (UNET), text encoder and VAE** files for [ComfyUI MOSS-Image T
 
 Download each selected weight **together with its matching `.assets` directory**. These contain integrity manifests and the TE tokenizer. Base and SFT use the same TE and VAE; both variants together total about 37.4 GB. Components are never merged into one checkpoint.
 
+Keep `tokenizer/` limited to its three shipped files. Extra files and subdirectories are rejected by the loaders.
+
 ## Quick start
 
 1. Install [ComfyUI MOSS-Image T8](https://github.com/T8mars/Comfyui-Moss-Image-T8) through ComfyUI Manager (publisher `t8star`, package `moss-image-t8`) or follow the manual installation instructions.

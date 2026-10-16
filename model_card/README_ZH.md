@@ -15,6 +15,8 @@
 
 **下载权重时，必须同时下载对应的 `.assets` 目录**，其中包含完整性清单及 TE tokenizer。Base / SFT 共用 TE、VAE，两版合计约 37.4 GB。DiT、TE、VAE 始终分开存放。
 
+`tokenizer/` 目录只保留交付的三个文件；额外文件和子目录会被加载器拒绝。
+
 ## 快速开始
 
 1. 在 ComfyUI Manager 安装 [ComfyUI MOSS-Image T8](https://github.com/T8mars/Comfyui-Moss-Image-T8)（发布者 `t8star`，包名 `moss-image-t8`），或按 GitHub 说明手动安装。

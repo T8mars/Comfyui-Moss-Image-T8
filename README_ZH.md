@@ -48,6 +48,8 @@ ComfyUI/models/
 
 **每个 `.assets` 目录必须与对应权重放在一起。** Base / SFT 的 DiT 各 10.16 GB，共用 TE 16.79 GB、VAE 0.25 GB，两版合计约 37.4 GB。原始 tensor 数据与精度均保留。也可在源码仓库目录运行 `python scripts/prepare_models.py --models-dir <ComfyUI/models> --variant both`，从固定官方版本重新导出，含原始缓存需约 75 GB。
 
+`tokenizer/` 目录只保留交付的三个文件；额外文件和子目录会被加载器拒绝。
+
 ## 工作流
 
 将下方 JSON 或 PNG 拖入 ComfyUI 画布即可加载完整连线。PNG 为实际生成图片，内嵌完整工作流；三个加载器已预选上面的模型文件名。
@@ -65,7 +67,7 @@ ComfyUI/models/
 
 ![MOSS-Image SFT，1024×1024，50 步](docs/examples/sft-quality.png)
 
-Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致。测试覆盖管道一致性、采样、文件完整性、设备选择、取消、验证工具及 Windows 启动器。详见[实测记录](docs/validation.md)、[最新审查](docs/review-20-rounds-4.md)与[架构及来源](docs/architecture.md)。
+Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致。测试覆盖管道一致性、采样、文件完整性、设备选择、取消、验证工具及 Windows 启动器。详见[实测记录](docs/validation.md)、[最新审查](docs/review-20-rounds-5.md)与[架构及来源](docs/architecture.md)。
 
 ## 致谢与许可
 

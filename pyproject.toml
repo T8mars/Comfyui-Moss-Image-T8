@@ -1,6 +1,6 @@
 [project]
 name = "moss-image-t8"
-version = "0.1.5"
+version = "0.1.6"
 description = "MOSS-Image Base and SFT with the official pipeline and independent DiT, text encoder and VAE loaders."
 requires-python = ">=3.10"
 license = { file = "LICENSE" }
