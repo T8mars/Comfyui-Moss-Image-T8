@@ -28,6 +28,7 @@ DTYPE_BYTES = {"BOOL": 1, "U8": 1, "I8": 1, "I16": 2, "U16": 2,
                "F64": 8, "I64": 8, "U64": 8, "F8_E4M3": 1, "F8_E5M2": 1}
 CHUNK = 8 * 1024 * 1024
 NETWORK_CHUNK = 64 * 1024
+TOKENIZER_FILES = ("tokenizer.json", "tokenizer_config.json", "chat_template.jinja")
 
 
 def check_cancelled(cancel_event):
@@ -425,6 +426,23 @@ def component_metadata(path):
         return json.loads(stream.read(length)).get("__metadata__", {})
 
 
+def check_tokenizer_directory(directory, preparing=False):
+    directory = Path(directory)
+    entries = {entry.name: entry for entry in directory.iterdir()}
+    allowed = set(TOKENIZER_FILES)
+    if preparing:
+        allowed.update(name + ".partial" for name in TOKENIZER_FILES)
+    invalid = set(entries) - allowed
+    if not preparing:
+        invalid.update(set(TOKENIZER_FILES) - set(entries))
+    for name, entry in entries.items():
+        if not entry.is_file() or (name.endswith(".partial") and entry.is_symlink()):
+            invalid.add(name)
+    if invalid:
+        raise ValueError(f"Unverified tokenizer entries in {directory}: {', '.join(sorted(invalid))}. "
+                         "Restore the official three-file tokenizer directory; existing entries were preserved.")
+
+
 def export_component(source, component, target, cancel_event=None):
     with exclusive_path(str(Path(target).resolve()) + ".prepare.lock"):
         return _export_component(source, component, target, cancel_event)
@@ -466,19 +484,26 @@ def _export_component(source, component, target, cancel_event=None):
     if component == "text_encoder":
         tokenizer = assets / "tokenizer"
         tokenizer.mkdir(exist_ok=True)
-        for name in ("tokenizer.json", "tokenizer_config.json", "chat_template.jinja"):
+        check_tokenizer_directory(tokenizer, preparing=True)
+        for name in TOKENIZER_FILES:
             original = source / "tokenizer" / name
             tokenizer_digest = verified["files"][f"tokenizer/{name}"]["sha256"]
             if sha256(original, cancel_event) != tokenizer_digest:
                 raise ValueError(f"Modified tokenizer source: {original}")
+            temporary = tokenizer / (name + ".partial")
+            if temporary.is_symlink() or temporary.is_dir():
+                raise ValueError(f"Unverified tokenizer temporary entry: {temporary}")
+            temporary.unlink(missing_ok=True)
             if not (tokenizer / name).exists() or sha256(tokenizer / name, cancel_event) != tokenizer_digest:
                 check_cancelled(cancel_event)
-                temporary = tokenizer / (name + ".partial")
                 shutil.copyfile(original, temporary)
                 temporary.replace(tokenizer / name)
             tokenizer_files[name] = tokenizer_digest
+        check_tokenizer_directory(tokenizer)
     if previous is not None:
         ensure_sources_unchanged(source, records, signature)
+        if component == "text_encoder":
+            check_tokenizer_directory(tokenizer)
         if file_signature(target) != target_signature:
             raise FileExistsError(f"Existing component changed during recovery: {target}")
         previous.update(ready=True, sha256=target_digest, size=target.stat().st_size,
@@ -503,6 +528,8 @@ def _export_component(source, component, target, cancel_event=None):
         manifest["tokenizer_files"] = tokenizer_files
     def pending(digest, size):
         ensure_sources_unchanged(source, records, signature)
+        if component == "text_encoder":
+            check_tokenizer_directory(tokenizer)
         manifest.update(pending_sha256=digest, size=size)
         atomic_json(manifest_path, manifest)
     if component == "vae":
@@ -516,6 +543,8 @@ def _export_component(source, component, target, cancel_event=None):
         index = "model.safetensors.index.json" if component == "text_encoder" else "diffusion_pytorch_model.safetensors.index.json"
         digest = merge_component(source / component, index, target, metadata,
                                  before_publish=pending, cancel_event=cancel_event)
+    if component == "text_encoder":
+        check_tokenizer_directory(tokenizer)
     manifest.update(ready=True, sha256=digest, size=target.stat().st_size,
                     config_sha256=hashlib.sha256(metadata["moss_image.config"].encode()).hexdigest())
     manifest.pop("pending_sha256", None)

@@ -8,6 +8,16 @@ import json
 import os
 from pathlib import Path
 
+TOKENIZER_FILES = frozenset({"tokenizer.json", "tokenizer_config.json", "chat_template.jinja"})
+
+
+def check_tokenizer_directory(directory):
+    directory = Path(directory)
+    if (not directory.is_dir() or {entry.name for entry in directory.iterdir()} != TOKENIZER_FILES
+            or any(not (directory / name).is_file() for name in TOKENIZER_FILES)):
+        raise ValueError(f"Expected only the three verified official tokenizer files in {directory}. "
+                         "Restore the matching tokenizer directory; extra inputs are not accepted.")
+
 
 @dataclass(frozen=True)
 class Component:
@@ -95,14 +105,16 @@ def inspect_component(path, kind, device="auto", precision="bf16"):
             or manifest.get("size") != path.stat().st_size
             or manifest.get("config_sha256") != hashlib.sha256(metadata["moss_image.config"].encode()).hexdigest()):
         raise ValueError(f"Incomplete or mismatched component package: {path}")
+    if kind == "text_encoder":
+        names = manifest.get("tokenizer_files", {})
+        if set(names) != TOKENIZER_FILES:
+            raise ValueError("Incomplete MOSS-Image tokenizer manifest")
+        check_tokenizer_directory(assets / "tokenizer")
     stat = path.stat()
     if verified_weight_sha256(str(path), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns,
                               stat.st_dev, stat.st_ino) != manifest.get("sha256"):
         raise ValueError(f"MOSS-Image weight SHA256 mismatch: {path}. Re-run the preparation tool or restore the verified file.")
     if kind == "text_encoder":
-        names = manifest.get("tokenizer_files", {})
-        if set(names) != {"tokenizer.json", "tokenizer_config.json", "chat_template.jinja"}:
-            raise ValueError("Incomplete MOSS-Image tokenizer manifest")
         for name, digest in names.items():
             token_file = assets / "tokenizer" / name
             if not token_file.is_file() or file_sha256(token_file) != digest:
@@ -114,6 +126,8 @@ def inspect_component(path, kind, device="auto", precision="bf16"):
 
 
 def ensure_unchanged(component):
+    if component.kind == "text_encoder":
+        check_tokenizer_directory(component.assets / "tokenizer")
     if component.package_fingerprint is not None and fingerprint(component.path) != component.package_fingerprint:
         raise ValueError(f"MOSS-Image package changed since verification: {component.path}. Re-run the workflow to reload it.")
 
@@ -123,10 +137,11 @@ def fingerprint(path):
     files = [path, Path(str(path) + ".assets") / "manifest.json"]
     tokenizer = Path(str(path) + ".assets") / "tokenizer"
     if tokenizer.is_dir():
+        files.append(tokenizer)
         files.extend(sorted(tokenizer.iterdir()))
     result = []
     for file in files:
-        if file.is_file():
+        if file.is_file() or file.is_dir():
             stat = file.stat()
             result.append((str(file), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns, stat.st_dev, stat.st_ino))
     return tuple(result)
