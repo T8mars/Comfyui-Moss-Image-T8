@@ -6,6 +6,8 @@ the original tensor bytes; RAM usage stays bounded while packaging the 9B TE.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager, ExitStack
+import errno
 import hashlib
 import json
 import math
@@ -378,6 +380,39 @@ def ensure_sources_unchanged(source, records, signature):
         raise ValueError("Verified source changed during export; no new model was published")
 
 
+@contextmanager
+def exclusive_path(path):
+    """Nonblocking OS lock; process exit releases it without stale PID cleanup."""
+    path = Path(path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a+b") as stream:
+        if os.name == "nt":
+            import msvcrt
+            stream.seek(0, os.SEEK_END)
+            if stream.tell() == 0:
+                stream.write(b"\0")
+                stream.flush()
+            stream.seek(0)
+            lock = lambda: msvcrt.locking(stream.fileno(), msvcrt.LK_NBLCK, 1)
+            def unlock():
+                stream.seek(0)
+                msvcrt.locking(stream.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            lock = lambda: fcntl.flock(stream.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+            unlock = lambda: fcntl.flock(stream.fileno(), fcntl.LOCK_UN)
+        try:
+            lock()
+        except OSError as exc:
+            if exc.errno in (errno.EACCES, errno.EAGAIN, errno.EDEADLK):
+                raise RuntimeError(f"Another MOSS-Image preparation is using {path}; retry when it finishes") from exc
+            raise
+        try:
+            yield
+        finally:
+            unlock()
+
+
 def component_metadata(path):
     with Path(path).open("rb") as stream:
         raw = stream.read(8)
@@ -390,6 +425,11 @@ def component_metadata(path):
 
 
 def export_component(source, component, target, cancel_event=None):
+    with exclusive_path(str(Path(target).resolve()) + ".prepare.lock"):
+        return _export_component(source, component, target, cancel_event)
+
+
+def _export_component(source, component, target, cancel_event=None):
     source, target = Path(source), Path(target)
     check_cancelled(cancel_event)
     assets = Path(str(target) + ".assets")
@@ -504,9 +544,12 @@ def main():
         source = download_variant(variant, args.cache_dir, ["transformer", "scheduler"], args.workers, cancel_event)
         export_component(source, "transformer", args.models_dir / f"diffusion_models/moss-image-{variant}-bf16.safetensors", cancel_event)
     variants = ["base", "sft"] if args.variant == "both" else [args.variant]
-    with ThreadPoolExecutor(max_workers=3) as jobs:
-        futures = [jobs.submit(common_components)] + [jobs.submit(dit_component, variant) for variant in variants]
-        wait_for_jobs(futures, cancel_event)
+    with ExitStack() as locks:
+        for directory in sorted({args.models_dir.resolve(), args.cache_dir.resolve()}, key=str):
+            locks.enter_context(exclusive_path(directory / ".moss-image-prepare.lock"))
+        with ThreadPoolExecutor(max_workers=3) as jobs:
+            futures = [jobs.submit(common_components)] + [jobs.submit(dit_component, variant) for variant in variants]
+            wait_for_jobs(futures, cancel_event)
 
 
 if __name__ == "__main__":
