@@ -45,22 +45,39 @@ def execution_device(component):
     import torch
     if component.device == "cpu":
         return torch.device("cpu")
-    if component.device == "cuda":
-        if not torch.cuda.is_available():
-            raise RuntimeError("CUDA was requested but is unavailable")
-        return torch.device("cuda", torch.cuda.current_device())
-    if component.device != "auto":
+    if component.device not in {"auto", "cuda"}:
         raise ValueError(f"Invalid device: {component.device}")
-    if torch.cuda.is_available():
-        from pathlib import Path
-        available, _ = torch.cuda.mem_get_info()
-        # Reserve activation/workspace space in addition to full component weights.
-        weight_bytes = Path(component.path).stat().st_size
-        if component.precision == "fp32" and component.kind != "vae":
-            weight_bytes *= 2
-        if available > weight_bytes + 2 * 1024**3:
-            return torch.device("cuda", torch.cuda.current_device())
-    return torch.device("cpu")
+    try:
+        from comfy import model_management
+    except ImportError:
+        model_management = None
+    if component.device == "auto" and model_management is not None:
+        device = model_management.get_torch_device()
+        if device.type != "cuda":
+            return torch.device("cpu")
+    else:
+        device = None
+    if not torch.cuda.is_available():
+        if component.device == "cuda":
+            raise RuntimeError("CUDA was requested but is unavailable")
+        return torch.device("cpu")
+    device = device if device is not None else torch.device("cuda", torch.cuda.current_device())
+    from pathlib import Path
+    weight_bytes = Path(component.path).stat().st_size
+    if component.precision == "fp32" and component.kind != "vae":
+        weight_bytes *= 2
+    # Admission heuristic; activation requirements still depend on the request.
+    required = weight_bytes + 2 * 1024**3
+    if model_management is not None:
+        model_management.free_memory(required, device)
+    if component.device == "cuda":
+        return device
+    if model_management is not None:
+        available = model_management.get_free_memory(device)
+    else:
+        torch.cuda.empty_cache()
+        available, _ = torch.cuda.mem_get_info(device)
+    return device if available >= required else torch.device("cpu")
 
 
 def materialize(component, device):
@@ -163,8 +180,15 @@ def sample(component, conditioning, seed=42, steps=50, cfg=3.0, shift=5.0,
         raise ValueError("Width and height must be positive multiples of 16")
     if not isinstance(conditioning, dict) or not {"positive", "positive_mask", "negative", "negative_mask"} <= conditioning.keys():
         raise ValueError("Connect MOSS-Image Official Text Encode conditioning")
-    if not math.isfinite(shift) or shift <= 0 or steps < 1 or batch_size < 1:
-        raise ValueError("Shift, steps and batch size must be positive")
+    if (not math.isfinite(shift) or shift <= 0 or type(steps) is not int or steps < 1
+            or type(batch_size) is not int or batch_size < 1):
+        raise ValueError("Shift must be finite and positive; steps and batch size must be positive integers")
+    if not math.isfinite(cfg) or cfg < 0:
+        raise ValueError("Guidance scale must be finite and nonnegative")
+    if not math.isfinite(slg_scale) or slg_scale < 0:
+        raise ValueError("SLG scale must be finite and nonnegative")
+    if not 0 <= slg_start <= slg_stop <= 1:
+        raise ValueError("Require 0 <= slg_start <= slg_stop <= 1")
     depth = component.config["num_layers"]
     skip = parse_layers(uncond_skip_layers, depth)
     slg = parse_layers(slg_layers, depth)

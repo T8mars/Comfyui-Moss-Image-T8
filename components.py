@@ -35,8 +35,8 @@ def file_sha256(path):
 
 
 @lru_cache(maxsize=32)
-def verified_weight_sha256(path, size, modified_ns, changed_ns):
-    # Stat values bind this process-local digest cache to the current file version.
+def verified_weight_sha256(path, size, modified_ns, changed_ns, device, inode):
+    # File identity also catches atomic replacements that preserve size/mtime.
     return file_sha256(path)
 
 
@@ -71,7 +71,8 @@ def inspect_component(path, kind, device="auto", precision="bf16"):
             or manifest.get("config_sha256") != hashlib.sha256(metadata["moss_image.config"].encode()).hexdigest()):
         raise ValueError(f"Incomplete or mismatched component package: {path}")
     stat = path.stat()
-    if verified_weight_sha256(str(path), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns) != manifest.get("sha256"):
+    if verified_weight_sha256(str(path), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns,
+                              stat.st_dev, stat.st_ino) != manifest.get("sha256"):
         raise ValueError(f"MOSS-Image weight SHA256 mismatch: {path}. Re-run the preparation tool or restore the verified file.")
     if kind == "text_encoder":
         names = manifest.get("tokenizer_files", {})
@@ -91,4 +92,9 @@ def fingerprint(path):
     tokenizer = Path(str(path) + ".assets") / "tokenizer"
     if tokenizer.is_dir():
         files.extend(sorted(tokenizer.iterdir()))
-    return tuple((str(file), file.stat().st_size, file.stat().st_mtime_ns) for file in files if file.is_file())
+    result = []
+    for file in files:
+        if file.is_file():
+            stat = file.stat()
+            result.append((str(file), stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns, stat.st_dev, stat.st_ino))
+    return tuple(result)

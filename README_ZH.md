@@ -61,11 +61,11 @@ ComfyUI/models/
 
 默认参数：**1024×1024 · 50 步 · CFG 3 · shift 5 · seed 42 · 空负面提示词**。负分支跳过第 `22` 层（从 0 开始），额外 SLG 与 VAE tiling 关闭。TE / DiT 使用 BF16，VAE 解码使用 FP32。宽高需为 16 的正整数倍。
 
-编码、采样、解码分阶段加载与释放模型；`auto` 按可用内存选择 CUDA / CPU，完整 TE 回退 CPU 时速度会降低。已在 Windows、RTX 5090 Laptop 24 GB 显卡完成实测，该配置不代表最低显存要求。
+编码、采样、解码分阶段加载与释放模型；`auto` 遵循 ComfyUI 设备设置，先协调释放缓存模型，再按可用内存选择 CUDA / CPU。完整 TE 回退 CPU 时速度会降低。已在 Windows、RTX 5090 Laptop 24 GB 显卡完成实测，该配置不代表最低显存要求。
 
 ![MOSS-Image SFT，1024×1024，50 步](docs/examples/sft-quality.png)
 
-Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致，15 项测试覆盖管道一致性、采样及导出完整性。详见[实测记录](docs/validation.md)与[架构及来源](docs/architecture.md)。
+Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致，32 项测试覆盖管道一致性、采样、文件缓存失效、设备选择及可续传的导出取消。详见[实测记录](docs/validation.md)、[20 轮交叉审查](docs/review-20-rounds.md)与[架构及来源](docs/architecture.md)。
 
 ## 致谢与许可
 

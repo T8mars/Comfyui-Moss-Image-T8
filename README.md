@@ -61,11 +61,11 @@ Six dedicated nodes cover DiT, TE and VAE loading, text encoding, official sampl
 
 Defaults: **1024×1024 · 50 steps · CFG 3 · shift 5 · seed 42 · empty negative prompt**. The unconditional branch skips layer `22` (zero-based); extra SLG and VAE tiling are off. TE/DiT use BF16; VAE decoding uses FP32. Width and height must be positive multiples of 16.
 
-Models are released between encoding, sampling and decoding. `auto` chooses CUDA or CPU using available memory; the full TE can fall back to CPU and run more slowly. Tested on Windows with a 24 GB RTX 5090 Laptop GPU; this is a tested configuration, not a minimum VRAM claim.
+Models are released between encoding, sampling and decoding. `auto` follows ComfyUI's device policy and reclaims its cached models before checking available memory. The full TE can fall back to CPU and run more slowly. Tested on Windows with a 24 GB RTX 5090 Laptop GPU; this is a tested configuration, not a minimum VRAM claim.
 
 ![MOSS-Image SFT, 1024×1024, 50 steps](docs/examples/sft-quality.png)
 
-Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte; 15 tests cover pipeline parity, sampling and export integrity. See [validation](docs/validation.md) and [source / architecture notes](docs/architecture.md).
+Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte; 32 tests cover pipeline parity, sampling, file-cache invalidation, device selection and resumable export cancellation. See [validation](docs/validation.md), [20-round review](docs/review-20-rounds.md) and [source notes](docs/architecture.md).
 
 ## Credits and license
 
