@@ -65,7 +65,7 @@ Models are released between encoding, sampling and decoding. `auto` follows Comf
 
 ![MOSS-Image SFT, 1024×1024, 50 steps](docs/examples/sft-quality.png)
 
-Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte. Tests cover pipeline parity, sampling, file integrity, device selection, cancellation, verification tools and the Windows launcher. See [validation](docs/validation.md), [latest review](docs/review-20-rounds-3.md) and [source notes](docs/architecture.md).
+Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte. Tests cover pipeline parity, sampling, file integrity, device selection, cancellation, verification tools and the Windows launcher. See [validation](docs/validation.md), [latest review](docs/review-20-rounds-4.md) and [source notes](docs/architecture.md).
 
 ## Credits and license
 
