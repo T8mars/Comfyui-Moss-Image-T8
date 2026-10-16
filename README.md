@@ -46,7 +46,7 @@ ComfyUI/models/
     └── moss-image-vae.safetensors.assets/manifest.json
 ```
 
-**Keep each `.assets` directory beside its weight file.** Each DiT is 10.16 GB, the shared TE is 16.79 GB and VAE is 0.25 GB; both variants together need about 37.4 GB. Original tensor data and precision are preserved. To export directly from the pinned upstream repositories instead, use `scripts/prepare_models.py --models-dir <ComfyUI/models> --variant both` (about 75 GB including source cache).
+**Keep each `.assets` directory beside its weight file.** Each DiT is 10.16 GB, the shared TE is 16.79 GB and VAE is 0.25 GB; both variants together need about 37.4 GB. Original tensor data and precision are preserved. To export directly from the pinned upstream repositories, run `python scripts/prepare_models.py --models-dir <ComfyUI/models> --variant both` from a source checkout (about 75 GB including source cache).
 
 ## Workflows
 
@@ -65,7 +65,7 @@ Models are released between encoding, sampling and decoding. `auto` follows Comf
 
 ![MOSS-Image SFT, 1024×1024, 50 steps](docs/examples/sft-quality.png)
 
-Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte; 32 tests cover pipeline parity, sampling, file-cache invalidation, device selection and resumable export cancellation. See [validation](docs/validation.md), [20-round review](docs/review-20-rounds.md) and [source notes](docs/architecture.md).
+Both workflows passed real canvas Run-button generation at 1024×1024 / 50 steps and all eight JSON/PNG import checks. All 1,936 tensors match the official source shards byte for byte. Tests cover pipeline parity, sampling, file integrity, device selection, cancellation, verification tools and the Windows launcher. See [validation](docs/validation.md), [first review](docs/review-20-rounds.md), [second review](docs/review-20-rounds-2.md) and [source notes](docs/architecture.md).
 
 ## Credits and license
 

@@ -5,6 +5,8 @@ import sys
 from concurrent.futures import CancelledError, ThreadPoolExecutor
 from threading import Event
 from types import SimpleNamespace
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
 
 import pytest
 import requests
@@ -141,3 +143,46 @@ def test_cancel_exits_retry_backoff_and_keeps_download_prefix(tmp_path, monkeypa
         prepare_models.range_download("http://127.0.0.1/weight", partial, 100, cancel)
     assert len(attempts) == 1
     assert partial.read_bytes() == b"verified-prefix"
+
+
+def test_http_cancel_observed_before_full_transfer_or_idle_timeout(tmp_path):
+    size = 1024 * 1024
+    headers_sent, send_prefix, finish = Event(), Event(), Event()
+    cancel = Event()
+    class Handler(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(206)
+            self.send_header("Content-Range", f"bytes 0-{size - 1}/{size}")
+            self.send_header("Content-Length", str(size))
+            self.end_headers()
+            headers_sent.set()
+            assert send_prefix.wait(3)
+            try:
+                self.wfile.write(b"x" * (64 * 1024))
+                self.wfile.flush()
+                finish.wait(3)
+                self.wfile.write(b"x" * (size - 64 * 1024))
+            except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
+                pass
+        def log_message(self, *args):
+            pass
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    thread = Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    try:
+        with ThreadPoolExecutor(max_workers=1) as pool:
+            future = pool.submit(prepare_models.range_download, f"http://127.0.0.1:{server.server_port}/weight",
+                                 tmp_path / "download.partial", size, cancel)
+            try:
+                assert headers_sent.wait(3)
+                cancel.set()
+                send_prefix.set()
+                with pytest.raises(CancelledError):
+                    future.result(timeout=1.5)
+            finally:
+                send_prefix.set()
+                finish.set()
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=2)

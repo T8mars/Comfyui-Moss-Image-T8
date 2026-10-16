@@ -25,6 +25,7 @@ DTYPE_BYTES = {"BOOL": 1, "U8": 1, "I8": 1, "I16": 2, "U16": 2,
                "F16": 2, "BF16": 2, "I32": 4, "U32": 4, "F32": 4,
                "F64": 8, "I64": 8, "U64": 8, "F8_E4M3": 1, "F8_E5M2": 1}
 CHUNK = 8 * 1024 * 1024
+NETWORK_CHUNK = 64 * 1024
 
 
 def check_cancelled(cancel_event):
@@ -301,7 +302,7 @@ def range_download(url, partial, size, cancel_event=None):
                             raise ValueError(f"Server did not honor exact download range: {partial.name}")
                         received = 0
                         with partial.open("ab") as writer:
-                            for block in response.iter_content(CHUNK):
+                            for block in response.iter_content(NETWORK_CHUNK):
                                 check_cancelled(cancel_event)
                                 if received + len(block) > end - start + 1:
                                     raise ValueError("Server returned excess range data")

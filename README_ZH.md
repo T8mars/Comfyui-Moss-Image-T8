@@ -46,7 +46,7 @@ ComfyUI/models/
     └── moss-image-vae.safetensors.assets/manifest.json
 ```
 
-**每个 `.assets` 目录必须与对应权重放在一起。** Base / SFT 的 DiT 各 10.16 GB，共用 TE 16.79 GB、VAE 0.25 GB，两版合计约 37.4 GB。原始 tensor 数据与精度均保留。也可用 `scripts/prepare_models.py --models-dir <ComfyUI/models> --variant both` 从固定官方版本重新导出，含原始缓存需约 75 GB。
+**每个 `.assets` 目录必须与对应权重放在一起。** Base / SFT 的 DiT 各 10.16 GB，共用 TE 16.79 GB、VAE 0.25 GB，两版合计约 37.4 GB。原始 tensor 数据与精度均保留。也可在源码仓库目录运行 `python scripts/prepare_models.py --models-dir <ComfyUI/models> --variant both`，从固定官方版本重新导出，含原始缓存需约 75 GB。
 
 ## 工作流
 
@@ -65,7 +65,7 @@ ComfyUI/models/
 
 ![MOSS-Image SFT，1024×1024，50 步](docs/examples/sft-quality.png)
 
-Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致，32 项测试覆盖管道一致性、采样、文件缓存失效、设备选择及可续传的导出取消。详见[实测记录](docs/validation.md)、[20 轮交叉审查](docs/review-20-rounds.md)与[架构及来源](docs/architecture.md)。
+Base / SFT 均通过真实画布“运行”按钮完成 1024×1024、50 步出图，JSON / PNG 导入共 8 项通过；1,936 个 tensor 与官方原始分片逐字节一致。测试覆盖管道一致性、采样、文件完整性、设备选择、取消、验证工具及 Windows 启动器。详见[实测记录](docs/validation.md)、[第一批审查](docs/review-20-rounds.md)、[第二批审查](docs/review-20-rounds-2.md)与[架构及来源](docs/architecture.md)。
 
 ## 致谢与许可
 

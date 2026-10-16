@@ -9,6 +9,11 @@ import shutil
 import numpy as np
 from PIL import Image, ImageStat
 
+if __package__:
+    from .verify_comfy import validate_history
+else:
+    from verify_comfy import validate_history
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -33,29 +38,37 @@ def check_gui(found, expected):
     assert found["links"] == expected["links"]
 
 
+def check_receipts(proof, submission, history):
+    images = validate_history(history)
+    assert proof["prompt_id"] == submission["prompt_id"] == history["prompt"][1], "Mismatched prompt IDs"
+    assert not submission.get("node_errors"), submission["node_errors"]
+    assert proof["sampler_executed_fresh"] and proof["preview_verified"]
+    assert proof["images"] == images, "Mismatched SaveImage receipts"
+    return images
+
+
 def main():
     report = []
     for variant in ("base", "sft"):
         folder = ROOT / "artifacts" / f"canvas-{variant}"
         proof = read(folder / "canvas-proof.json")
         request = read(folder / "browser-request.json")
+        submission = read(folder / "submission.json")
         history = read(folder / "history.json")
         gui_path = ROOT / f"example_workflows/moss-image-{variant}.json"
         gui = read(gui_path)
         expected = read(ROOT / f"example_workflows/moss-image-{variant}-api.json")
         assert hashlib.sha256(gui_path.read_bytes()).hexdigest() == proof["workflow_sha256"]
-        assert history["status"]["status_str"] == "success"
-        assert proof["sampler_executed_fresh"] and proof["preview_verified"]
+        images = check_receipts(proof, submission, history)
         assert not proof["page_errors"], proof["page_errors"]
         check_prompt(request["prompt"], expected)
         check_prompt(history["prompt"][2], expected)
         check_gui(request["extra_data"]["extra_pnginfo"]["workflow"], gui)
         assert expected["5"]["inputs"]["width"] == expected["5"]["inputs"]["height"] == 1024
-        images = history["outputs"]["7"]["images"]
-        assert len(images) == 1
         path = folder / images[0]["filename"]
         with Image.open(path) as image:
             image.load()
+            assert image.format == "PNG"
             assert image.size == (1024, 1024)
             assert image.mode == "RGB"
             assert max(ImageStat.Stat(image).stddev) > 0.001

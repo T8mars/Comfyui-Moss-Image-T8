@@ -16,7 +16,17 @@ $pluginPath = Join-Path $customPath 'ComfyUI-MOSS-Image'
 if (-not (Test-Path -LiteralPath $pluginPath)) {
     New-Item -ItemType Junction -Path $pluginPath -Target $projectRoot | Out-Null
 }
+else {
+    $pluginItem = Get-Item -LiteralPath $pluginPath -Force
+    $targetPaths = @($pluginItem.Target)
+    if (-not ($pluginItem.Attributes -band [IO.FileAttributes]::ReparsePoint) -or
+        $targetPaths.Count -ne 1 -or
+        [IO.Path]::GetFullPath($targetPaths[0]).TrimEnd('\') -ne $projectRoot.TrimEnd('\')) {
+        throw "Custom-node path points to another checkout: $pluginPath. Inspect it and remove the stale link before retrying."
+    }
+}
 $comfyArgs = @('-s','-u',$comfyMain,'--base-directory',$localBase,'--models-directory',$modelsPath,
     '--port',"$Port",'--listen','127.0.0.1','--disable-auto-launch','--offline',
     '--use-pytorch-cross-attention','--disable-dynamic-vram','--cache-classic','--database-url','sqlite:///:memory:')
 & $Python @comfyArgs
+exit $LASTEXITCODE

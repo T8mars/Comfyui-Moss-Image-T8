@@ -4,13 +4,14 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const assert = require('node:assert/strict');
-const { chromium } = require('playwright');
 
 const root = path.resolve(__dirname, '..');
-const baseURL = process.env.MOSS_COMFY_URL || 'http://127.0.0.1:8279';
+const baseURL = (process.env.MOSS_COMFY_URL || 'http://127.0.0.1:8279').replace(/\/+$/, '');
 const variants = process.argv.slice(2).length ? process.argv.slice(2) : ['sft', 'base'];
 const digest = data => crypto.createHash('sha256').update(data).digest('hex');
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
+const timeoutSeconds = Number(process.env.MOSS_VERIFY_TIMEOUT_SECONDS || 1800);
+assert.ok(Number.isFinite(timeoutSeconds) && timeoutSeconds > 0, 'MOSS_VERIFY_TIMEOUT_SECONDS must be finite and positive');
 
 function checkPrompt(actual, expected) {
   assert.deepEqual(Object.keys(actual).sort(), Object.keys(expected).sort(), 'Unexpected node set');
@@ -20,7 +21,57 @@ function checkPrompt(actual, expected) {
   }
 }
 
+function validateHistory(history) {
+  assert.equal(history.status?.status_str, 'success', JSON.stringify(history.status));
+  assert.equal(history.status.completed, true, 'Server history is not completed');
+  const events = (history.status.messages || []).filter(([kind]) => kind === 'execution_cached');
+  assert.ok(events.length && events.every(([, data]) => !(data.nodes || []).map(String).includes('5')),
+            'A fresh sampler execution was not established');
+  const images = history.outputs?.['7']?.images;
+  assert.ok(Array.isArray(images) && images.length === 1, 'Expected exactly one SaveImage output');
+  return images;
+}
+
+function assertPng(bytes) {
+  assert.ok(bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex')),
+            'Expected a PNG image from SaveImage');
+}
+
+async function waitForHistory(requestContext, promptId, { folder, start = Date.now(),
+                         timeout = timeoutSeconds, onProgress = async () => {}, pollMs = 2000 } = {}) {
+  const deadline = start + timeout * 1000;
+  async function failTimeout(cause) {
+    const report = { prompt_id: promptId, timeout_seconds: timeout };
+    try {
+      const response = await requestContext.get(`${baseURL}/queue`, { timeout: 5000 });
+      assert.ok(response.ok());
+      const queue = await response.json();
+      for (const name of ['queue_running', 'queue_pending']) report[name] = (queue[name] || []).map(item => item[1]);
+    } catch (error) { report.queue_error = String(error); }
+    await fs.writeFile(path.join(folder, 'timeout.json'), JSON.stringify(report, null, 2));
+    throw new Error(`Timed out waiting for prompt ${promptId}; inspect its server queue/history before rerunning`, { cause });
+  }
+  for (;;) {
+    const remaining = deadline - Date.now();
+    if (remaining <= 0) await failTimeout();
+    let status;
+    try {
+      status = await requestContext.get(`${baseURL}/history/${promptId}`, { timeout: Math.min(30000, remaining) });
+    } catch (error) {
+      if (error.name === 'TimeoutError' || /Timeout .* exceeded/.test(String(error))) await failTimeout(error);
+      throw error;
+    }
+    assert.ok(status.ok());
+    const data = await status.json();
+    if (data[promptId]) return data[promptId];
+    await onProgress();
+    // Keep observing this prompt; never cancel or resubmit on an observation timeout.
+    await sleep(Math.max(0, Math.min(pollMs, deadline - Date.now())));
+  }
+}
+
 async function main() {
+  const { chromium } = require('playwright');
   const browser = await chromium.launch({ channel: 'msedge', headless: true, args: ['--disable-gpu'] });
   try {
     const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
@@ -72,13 +123,8 @@ async function main() {
       assert.ok(embedded?.nodes?.length === 7, 'Canvas did not include its workflow for PNG metadata');
       const promptId = submission.prompt_id;
       console.log(`CLICKED Run: ${variant}, ${promptId}, 1024x1024 / 50 / CFG3 / shift5 / skip22`);
-      let history;
       let lastProgress = 0;
-      for (;;) {
-        const status = await page.request.get(`${baseURL}/history/${promptId}`);
-        assert.ok(status.ok());
-        const data = await status.json();
-        if (data[promptId]) { history = data[promptId]; break; }
+      const history = await waitForHistory(page.request, promptId, { folder, start, onProgress: async () => {
         if (Date.now() - lastProgress > 30000) {
           const progress = await page.evaluate(() => {
             const app = window.comfyAPI.app.app;
@@ -88,21 +134,16 @@ async function main() {
           await page.screenshot({ path: path.join(folder, 'canvas-running.png') });
           lastProgress = Date.now();
         }
-        // This remains tied to this live prompt ID. An observation delay never
-        // causes the model to be restarted or the prompt to be submitted again.
-        await sleep(2000);
-      }
+      } });
       await fs.writeFile(path.join(folder, 'history.json'), JSON.stringify(history, null, 2));
-      assert.equal(history.status.status_str, 'success', JSON.stringify(history.status));
       checkPrompt(history.prompt[2], expected);
-      const cached = history.status.messages.find(([kind]) => kind === 'execution_cached')?.[1]?.nodes || [];
-      assert.ok(!cached.includes('5'), 'Sampler was cached; this does not prove a fresh model run');
-      const images = history.outputs['7'].images;
-      assert.equal(images.length, 1);
+      const images = validateHistory(history);
       for (const image of images) {
         const result = await page.request.get(`${baseURL}/view?${new URLSearchParams(image)}`);
         assert.ok(result.ok());
-        await fs.writeFile(path.join(folder, image.filename), await result.body());
+        const bytes = await result.body();
+        assertPng(bytes);
+        await fs.writeFile(path.join(folder, image.filename), bytes);
       }
       await page.waitForFunction(() => {
         const node = window.comfyAPI.app.app.graph.getNodeById(7);
@@ -128,4 +169,5 @@ async function main() {
   }
 }
 
-main().catch(error => { console.error(error); process.exitCode = 1; });
+module.exports = { validateHistory, waitForHistory, assertPng };
+if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
