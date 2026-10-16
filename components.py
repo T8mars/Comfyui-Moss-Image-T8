@@ -28,10 +28,23 @@ class Component:
         return Path(self.path + ".assets")
 
 
+def interrupted():
+    try:
+        from comfy.model_management import throw_exception_if_processing_interrupted
+    except ImportError:
+        return
+    throw_exception_if_processing_interrupted()
+
+
 def file_sha256(path):
+    interrupted()
     digest = hashlib.sha256()
     with Path(path).open("rb") as stream:
-        for block in iter(lambda: stream.read(1024 * 1024), b""):
+        while True:
+            interrupted()
+            block = stream.read(1024 * 1024)
+            if not block:
+                break
             digest.update(block)
     return digest.hexdigest()
 
@@ -51,6 +64,7 @@ def component_path(path):
 
 
 def inspect_component(path, kind, device="auto", precision="bf16"):
+    interrupted()
     from safetensors import safe_open
     path = component_path(path)
     if not path.is_file():

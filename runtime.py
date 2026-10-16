@@ -8,7 +8,7 @@ import logging
 import math
 import threading
 
-from .components import Component, ensure_unchanged
+from .components import Component, ensure_unchanged, interrupted
 
 LOGGER = logging.getLogger(__name__)
 STAGE_LOCK = threading.RLock()
@@ -24,14 +24,6 @@ def dependencies():
         raise RuntimeError("MOSS-Image needs PyTorch >=2.9, Diffusers >=0.38, Transformers >=5.3. "
                            f"Install requirements.txt with this ComfyUI's Python. Original error: {exc}") from exc
     return torch, MOSSImagePipeline, MOSSImageScheduler, MOSSImageTransformer
-
-
-def interrupted():
-    try:
-        from comfy.model_management import throw_exception_if_processing_interrupted
-    except ImportError:
-        return
-    throw_exception_if_processing_interrupted()
 
 
 def clean_memory():
@@ -82,6 +74,7 @@ def execution_device(component):
 
 def materialize(component, device):
     torch, _, _, transformer_class = dependencies()
+    interrupted()
     from accelerate import init_empty_weights
     from safetensors.torch import load_file
     config = component.config
@@ -99,16 +92,21 @@ def materialize(component, device):
             model = AutoencoderKLFlux2.from_config(config)
         else:
             raise ValueError(f"Unknown component: {component.kind}")
+    interrupted()
     state = load_file(component.path, device="cpu")
+    interrupted()
     model.load_state_dict(state, strict=True, assign=True)
     del state
     # Cast parameters without rounding Qwen's nonpersistent fp32 rotary buffers.
     for parameter in model.parameters():
+        interrupted()
         if parameter.is_floating_point() and parameter.dtype != dtype:
             parameter.data = parameter.data.to(dtype=dtype)
     if any(tensor.is_meta for tensor in (*model.parameters(), *model.buffers())):
         raise RuntimeError("Component contains unmaterialized meta tensors")
+    interrupted()
     model = model.eval().requires_grad_(False).to(device=device)
+    interrupted()
     LOGGER.info("MOSS-Image: %s on %s (%s)", component.kind, device, dtype)
     return model
 
@@ -123,6 +121,7 @@ def loaded(component, kind):
             interrupted()
             ensure_unchanged(component)
             model = materialize(component, execution_device(component))
+            interrupted()
             ensure_unchanged(component)
             yield model
             ensure_unchanged(component)

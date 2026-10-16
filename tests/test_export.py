@@ -67,7 +67,8 @@ def test_export_recovers_publish_window_and_repairs_tokenizer(tmp_path, monkeypa
     for name in token_names:
         (tokens / name).write_text("official " + name)
     (source / "verified.json").write_text(json.dumps({"repo": "test", "revision": "pinned", "files": {
-        f"tokenizer/{name}": {"sha256": prepare_models.sha256(tokens / name)} for name in token_names}}))
+        p.relative_to(source).as_posix(): {"sha256": prepare_models.sha256(p), "size": p.stat().st_size}
+        for p in source.rglob("*") if p.is_file()}}))
     target = tmp_path / "out.safetensors"
     original = prepare_models.atomic_json
     def interrupted_publish(path, value):

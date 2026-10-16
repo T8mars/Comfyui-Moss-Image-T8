@@ -331,58 +331,137 @@ def range_download(url, partial, size, cancel_event=None):
         session.close()
 
 
+def file_signature(path):
+    stat = Path(path).stat()
+    return stat.st_size, stat.st_mtime_ns, stat.st_ctime_ns, stat.st_dev, stat.st_ino
+
+
+def source_signature(source, names):
+    return tuple((name, file_signature(child_path(source, name))) for name in sorted(names))
+
+
+def verify_export_sources(source, component, verified, include_weights, cancel_event=None):
+    names = {f"{component}/config.json"}
+    if component == "text_encoder":
+        names.update(f"tokenizer/{name}" for name in ("tokenizer.json", "tokenizer_config.json", "chat_template.jinja"))
+    elif component == "transformer":
+        names.add("scheduler/scheduler_config.json")
+    if include_weights:
+        if component == "vae":
+            names.add("vae/diffusion_pytorch_model.safetensors")
+        else:
+            index = ("model.safetensors.index.json" if component == "text_encoder"
+                     else "diffusion_pytorch_model.safetensors.index.json")
+            names.add(f"{component}/{index}")
+            mapping = read_json(child_path(source, f"{component}/{index}"))["weight_map"]
+            if not isinstance(mapping, dict) or not mapping:
+                raise ValueError("Empty/invalid source weight index")
+            names.update(child_path(source / component, shard).relative_to(source.resolve()).as_posix()
+                         for shard in mapping.values())
+    signature = source_signature(source, names)
+    records = {}
+    for name in sorted(names):
+        check_cancelled(cancel_event)
+        path = child_path(source, name)
+        record = verified.get("files", {}).get(name)
+        if (not record or record.get("size") != path.stat().st_size
+                or record.get("sha256") != sha256(path, cancel_event)):
+            raise ValueError(f"Missing or modified verified source: {name}. Re-run the download step.")
+        records[name] = record
+    if source_signature(source, names) != signature:
+        raise ValueError("Verified source changed during export verification")
+    return records, signature
+
+
+def ensure_sources_unchanged(source, records, signature):
+    if source_signature(source, records) != signature:
+        raise ValueError("Verified source changed during export; no new model was published")
+
+
+def component_metadata(path):
+    with Path(path).open("rb") as stream:
+        raw = stream.read(8)
+        if len(raw) != 8:
+            raise ValueError("Truncated component header")
+        length = struct.unpack("<Q", raw)[0]
+        if length > 100_000_000 or length + 8 > Path(path).stat().st_size:
+            raise ValueError("Invalid component header")
+        return json.loads(stream.read(length)).get("__metadata__", {})
+
+
 def export_component(source, component, target, cancel_event=None):
+    source, target = Path(source), Path(target)
     check_cancelled(cancel_event)
     assets = Path(str(target) + ".assets")
-    assets.mkdir(parents=True, exist_ok=True)
     manifest_path = assets / "manifest.json"
     verification_path = source / f"verified-{component}.json"
     verified = read_json(verification_path if verification_path.exists() else source / "verified.json")
+    previous = target_metadata = target_digest = target_signature = None
+    if target.exists():
+        if manifest_path.exists():
+            previous = read_json(manifest_path)
+            target_digest = previous.get("sha256") or previous.get("pending_sha256")
+            target_signature = file_signature(target)
+            if (previous.get("component") != component or previous.get("revision") != verified["revision"]
+                    or not target_digest or target_digest != sha256(target, cancel_event)
+                    or file_signature(target) != target_signature):
+                raise FileExistsError(f"Existing file has no matching ready manifest: {target}")
+            target_metadata = component_metadata(target)
+        else:
+            raise FileExistsError(f"Existing file has no matching ready manifest: {target}")
+    records, signature = verify_export_sources(source, component, verified, previous is None, cancel_event)
     config = read_json(source / component / "config.json")
+    scheduler = read_json(source / "scheduler/scheduler_config.json") if component == "transformer" else None
+    if previous is not None:
+        if (target_metadata.get("moss_image.format") != "1"
+                or target_metadata.get("moss_image.component") != component
+                or json.loads(target_metadata.get("moss_image.config", "null")) != config
+                or json.loads(target_metadata.get("moss_image.source", "null")) !=
+                    {"repo": verified["repo"], "revision": verified["revision"]}
+                or (scheduler is not None and json.loads(target_metadata.get("moss_image.scheduler", "null")) != scheduler)):
+            raise FileExistsError(f"Existing component metadata does not match verified sources: {target}")
+    assets.mkdir(parents=True, exist_ok=True)
     tokenizer_files = {}
     if component == "text_encoder":
         tokenizer = assets / "tokenizer"
         tokenizer.mkdir(exist_ok=True)
         for name in ("tokenizer.json", "tokenizer_config.json", "chat_template.jinja"):
             original = source / "tokenizer" / name
-            expected = verified["files"][f"tokenizer/{name}"]["sha256"]
-            if sha256(original, cancel_event) != expected:
+            tokenizer_digest = verified["files"][f"tokenizer/{name}"]["sha256"]
+            if sha256(original, cancel_event) != tokenizer_digest:
                 raise ValueError(f"Modified tokenizer source: {original}")
-            if not (tokenizer / name).exists() or sha256(tokenizer / name, cancel_event) != expected:
+            if not (tokenizer / name).exists() or sha256(tokenizer / name, cancel_event) != tokenizer_digest:
                 check_cancelled(cancel_event)
                 temporary = tokenizer / (name + ".partial")
                 shutil.copyfile(original, temporary)
                 temporary.replace(tokenizer / name)
-            tokenizer_files[name] = expected
-    if target.exists():
-        if manifest_path.exists():
-            previous = read_json(manifest_path)
-            expected = previous.get("sha256") or previous.get("pending_sha256")
-            if (previous.get("component") == component and previous.get("revision") == verified["revision"]
-                    and expected and expected == sha256(target, cancel_event)):
-                previous.update(ready=True, sha256=expected, size=target.stat().st_size,
-                                config_sha256=hashlib.sha256(json.dumps(config).encode()).hexdigest())
-                previous.pop("pending_sha256", None)
-                if tokenizer_files:
-                    previous["tokenizer_files"] = tokenizer_files
-                check_cancelled(cancel_event)
-                atomic_json(manifest_path, previous)
-                print(f"Already verified: {target}", flush=True)
-                return
-        raise FileExistsError(f"Existing file has no matching ready manifest: {target}")
+            tokenizer_files[name] = tokenizer_digest
+    if previous is not None:
+        ensure_sources_unchanged(source, records, signature)
+        if file_signature(target) != target_signature:
+            raise FileExistsError(f"Existing component changed during recovery: {target}")
+        previous.update(ready=True, sha256=target_digest, size=target.stat().st_size,
+                        config_sha256=hashlib.sha256(target_metadata["moss_image.config"].encode()).hexdigest())
+        previous.pop("pending_sha256", None)
+        if tokenizer_files:
+            previous["tokenizer_files"] = tokenizer_files
+        check_cancelled(cancel_event)
+        atomic_json(manifest_path, previous)
+        print(f"Already verified: {target}", flush=True)
+        return
     manifest = {"schema_version": 1, "ready": False, "component": component,
                 "repo": verified["repo"], "revision": verified["revision"],
-                "source_files": {k: v for k, v in verified["files"].items()
-                                 if k.startswith(component + "/") or (component == "text_encoder" and k.startswith("tokenizer/"))}}
+                "source_files": records}
     atomic_json(manifest_path, manifest)
     metadata = {"format": "pt", "moss_image.format": "1", "moss_image.component": component,
                 "moss_image.config": json.dumps(config),
                 "moss_image.source": json.dumps({"repo": verified["repo"], "revision": verified["revision"]})}
     if component == "transformer":
-        metadata["moss_image.scheduler"] = json.dumps(read_json(source / "scheduler/scheduler_config.json"))
+        metadata["moss_image.scheduler"] = json.dumps(scheduler)
     if tokenizer_files:
         manifest["tokenizer_files"] = tokenizer_files
     def pending(digest, size):
+        ensure_sources_unchanged(source, records, signature)
         manifest.update(pending_sha256=digest, size=size)
         atomic_json(manifest_path, manifest)
     if component == "vae":

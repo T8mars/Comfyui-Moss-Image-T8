@@ -107,7 +107,9 @@ def test_cancel_during_publish_preserves_recoverable_export(tmp_path, monkeypatc
     values = {"a": torch.arange(4, dtype=torch.float32)}
     save_file(values, vae / "diffusion_pytorch_model.safetensors")
     (vae / "config.json").write_text(json.dumps({"_class_name": "AutoencoderKLFlux2"}))
-    (source / "verified-vae.json").write_text(json.dumps({"repo": "test", "revision": "pinned", "files": {}}))
+    (source / "verified-vae.json").write_text(json.dumps({"repo": "test", "revision": "pinned", "files": {
+        p.relative_to(source).as_posix(): {"sha256": prepare_models.sha256(p), "size": p.stat().st_size}
+        for p in vae.iterdir() if p.is_file()}}))
     target = tmp_path / "vae.safetensors"
     cancel = Event()
     original = prepare_models.atomic_json
