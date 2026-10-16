@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from functools import lru_cache
 import hashlib
 import json
+import os
 from pathlib import Path
 
 
@@ -16,6 +17,7 @@ class Component:
     scheduler_json: str = "{}"
     device: str = "auto"
     precision: str = "bf16"
+    package_fingerprint: tuple | None = None
 
     @property
     def config(self):
@@ -40,11 +42,20 @@ def verified_weight_sha256(path, size, modified_ns, changed_ns, device, inode):
     return file_sha256(path)
 
 
+def component_path(path):
+    # HF snapshots keep sidecars beside a logical weight symlink, not its blob.
+    logical = Path(path).absolute()
+    if os.path.lexists(str(logical) + ".assets"):
+        return logical
+    return logical.resolve()
+
+
 def inspect_component(path, kind, device="auto", precision="bf16"):
     from safetensors import safe_open
-    path = Path(path).resolve()
+    path = component_path(path)
     if not path.is_file():
         raise FileNotFoundError(f"MOSS-Image component missing: {path}. Run scripts/prepare_models.py --models-dir <ComfyUI/models>.")
+    signature = fingerprint(path)
     with safe_open(path, framework="pt", device="cpu") as stream:
         metadata = stream.metadata() or {}
     if metadata.get("moss_image.format") != "1" or metadata.get("moss_image.component") != kind:
@@ -82,12 +93,19 @@ def inspect_component(path, kind, device="auto", precision="bf16"):
             token_file = assets / "tokenizer" / name
             if not token_file.is_file() or file_sha256(token_file) != digest:
                 raise ValueError(f"Missing or modified official tokenizer: {token_file}")
+    if fingerprint(path) != signature:
+        raise ValueError(f"MOSS-Image package changed during verification: {path}. Re-run the loader.")
     return Component(str(path), kind, metadata["moss_image.config"],
-                     metadata.get("moss_image.scheduler", "{}"), device, precision)
+                     metadata.get("moss_image.scheduler", "{}"), device, precision, signature)
+
+
+def ensure_unchanged(component):
+    if component.package_fingerprint is not None and fingerprint(component.path) != component.package_fingerprint:
+        raise ValueError(f"MOSS-Image package changed since verification: {component.path}. Re-run the workflow to reload it.")
 
 
 def fingerprint(path):
-    path = Path(path)
+    path = component_path(path)
     files = [path, Path(str(path) + ".assets") / "manifest.json"]
     tokenizer = Path(str(path) + ".assets") / "tokenizer"
     if tokenizer.is_dir():

@@ -8,7 +8,7 @@ import logging
 import math
 import threading
 
-from .components import Component
+from .components import Component, ensure_unchanged
 
 LOGGER = logging.getLogger(__name__)
 STAGE_LOCK = threading.RLock()
@@ -121,8 +121,11 @@ def loaded(component, kind):
         model = None
         try:
             interrupted()
+            ensure_unchanged(component)
             model = materialize(component, execution_device(component))
+            ensure_unchanged(component)
             yield model
+            ensure_unchanged(component)
         finally:
             # The caller must clear its pipeline reference before leaving this scope.
             model = None
