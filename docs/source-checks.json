@@ -1,0 +1,98 @@
+[
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "scheduler/scheduler_config.json",
+    "sha256": "707322832cc507dfb8c51c0e0cd04d44ee2d30a9b036b6f3c47d6c17aa71adf0",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "899d57de13c4ed6ee76ed25117e382e99efbfccc"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "text_encoder/config.json",
+    "sha256": "b31ee18a242bcfcccbe740f825f6b1d3ae231b0655eeecb5de3e98d504b7d68c",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "a745bd0815eddf6b913e3a4ecf9cc9ed5f5f5625"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "text_encoder/model.safetensors.index.json",
+    "sha256": "0af6fa3fa36ba8dcbb6b7ad0325a36c5b1b69862a9a1f1486b1b80385bd8f5ee",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "f0ed1b0ede41b6f8b6e1170abebf8d4468a93779"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "tokenizer/chat_template.jinja",
+    "sha256": "a4aee8afcf2e0711942cf848899be66016f8d14a889ff9ede07bca099c28f715",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "a585dec894e63da457d9440ec6aa7caa16d20860"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "tokenizer/tokenizer.json",
+    "sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+    "official_lfs_sha256": "06b9509352d2af50381ab2247e083b80d32d5c0aba91c272ca9ff729b6a0e523",
+    "official_git_blob_id": null
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "tokenizer/tokenizer_config.json",
+    "sha256": "bee8eba30f0eb4af73c0fe2cd06d0f89b657d7819941c438157ec42f7c80ea87",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "6913705fa6a05ee4498df98d776803ba8b39f413"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "transformer/config.json",
+    "sha256": "3291c3a1c7adc22b8182a0de25ca8ec97474d72715ce84adbab09cc0be24f666",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "09ba6435c9566086eab63a37366157a97d9fa2d8"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "transformer/diffusion_pytorch_model.safetensors.index.json",
+    "sha256": "b609327fc75dbe5080e7e095d8b727d74d728b4f98e8b047133b0082cfa2fb03",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "97208f5194db604c0b57f5d3a983dc7ce0e53bb5"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-Base",
+    "revision": "5f40f07a304541840b6019d2d34d30f966756787",
+    "path": "vae/config.json",
+    "sha256": "cc77f3f0ce0357039c71018dc19edaa4fcceb0c2f7488fdc2b9c0580d6baafa1",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "3c982a055138a9d5b52bac025c1831949c489a92"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-SFT",
+    "revision": "daf706d2e1c7a6369c17b6d1658671aee6db1ebe",
+    "path": "scheduler/scheduler_config.json",
+    "sha256": "707322832cc507dfb8c51c0e0cd04d44ee2d30a9b036b6f3c47d6c17aa71adf0",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "899d57de13c4ed6ee76ed25117e382e99efbfccc"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-SFT",
+    "revision": "daf706d2e1c7a6369c17b6d1658671aee6db1ebe",
+    "path": "transformer/config.json",
+    "sha256": "3291c3a1c7adc22b8182a0de25ca8ec97474d72715ce84adbab09cc0be24f666",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "09ba6435c9566086eab63a37366157a97d9fa2d8"
+  },
+  {
+    "repo": "OpenMOSS-Team/MOSS-Image-SFT",
+    "revision": "daf706d2e1c7a6369c17b6d1658671aee6db1ebe",
+    "path": "transformer/diffusion_pytorch_model.safetensors.index.json",
+    "sha256": "b609327fc75dbe5080e7e095d8b727d74d728b4f98e8b047133b0082cfa2fb03",
+    "official_lfs_sha256": null,
+    "official_git_blob_id": "97208f5194db604c0b57f5d3a983dc7ce0e53bb5"
+  }
+]

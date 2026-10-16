@@ -1,0 +1,95 @@
+[
+  {
+    "variant": "base",
+    "source": "user-visible canvas Run button click",
+    "prompt_id": "ad3d626b-b9f7-4704-b3dd-f2ca6f313d25",
+    "workflow_sha256": "60b83ba40e73fbba01c4b33c00e0a9aa3f686f3f9aed4a92b55e9b545602251e",
+    "sampler_executed_fresh": true,
+    "canvas_preview_size": [
+      [
+        1024,
+        1024
+      ]
+    ],
+    "fixed_seed_after_run": 42,
+    "parameters": {
+      "dit": [
+        "1",
+        0
+      ],
+      "conditioning": [
+        "4",
+        0
+      ],
+      "seed": 42,
+      "steps": 50,
+      "cfg": 3.0,
+      "shift": 5.0,
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1,
+      "uncond_skip_layers": "22",
+      "slg_layers": "",
+      "slg_scale": 0.0,
+      "slg_start": 0.0,
+      "slg_stop": 1.0
+    },
+    "png_size": [
+      1024,
+      1024
+    ],
+    "png_sha256": "adbfaf53d3cd00c1a5a205a1767f9912963d121fd57002e7f47a98d99585fd94",
+    "pixel_sha256": "66f76066685b08da63dcc8a80aad563669f23d95d44af9ca6ad967d5590a75d1",
+    "png_embedded_prompt_and_gui_exact": true,
+    "drag_in_png": "example_workflows/moss-image-base.png"
+  },
+  {
+    "variant": "sft",
+    "source": "user-visible canvas Run button click",
+    "prompt_id": "c2d59d67-926b-473c-a06b-52d2976fe1fc",
+    "workflow_sha256": "5ab138bb790dadb312a009b23f6dd34d0610d8ea90f84891314c62de71eddde3",
+    "sampler_executed_fresh": true,
+    "canvas_preview_size": [
+      [
+        1024,
+        1024
+      ]
+    ],
+    "fixed_seed_after_run": 42,
+    "parameters": {
+      "dit": [
+        "1",
+        0
+      ],
+      "conditioning": [
+        "4",
+        0
+      ],
+      "seed": 42,
+      "steps": 50,
+      "cfg": 3.0,
+      "shift": 5.0,
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1,
+      "uncond_skip_layers": "22",
+      "slg_layers": "",
+      "slg_scale": 0.0,
+      "slg_start": 0.0,
+      "slg_stop": 1.0
+    },
+    "png_size": [
+      1024,
+      1024
+    ],
+    "png_sha256": "f42dfbef3ca472de17748f3982b390d16b3b0e9ad76f6e9297402f18c8e931c4",
+    "pixel_sha256": "cd277f6140770b9e317240d9cd5528f21cbe5aa4644f1eab5f9ffe76ebf5db75",
+    "png_embedded_prompt_and_gui_exact": true,
+    "against_previous_direct_api_run": {
+      "pixels_identical": true,
+      "max_absolute_rgb_difference": 0,
+      "mean_absolute_rgb_difference": 0.0
+    },
+    "drag_in_png": "example_workflows/moss-image-sft.png"
+  }
+]

@@ -1,0 +1,17 @@
+.venv/
+_reference/
+_downloads/
+models/
+.comfy/
+artifacts/
+__pycache__/
+.pytest_cache/
+*.pyc
+*.log
+*.partial
+dist/
+.publish-venv/
+_publish/
+.env
+.env.*
+*.token

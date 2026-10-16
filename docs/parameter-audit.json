@@ -1,0 +1,175 @@
+{
+  "pipeline_sha256": "1dac1aca9feb1bfdfc727a401e4b67d61a505d3190706d1b7d2d784f88678b31",
+  "both_pinned_remote_pipeline_blobs_match": true,
+  "official_pipeline_defaults_from_ast": {
+    "height": 1024,
+    "width": 1024,
+    "num_inference_steps": 50,
+    "guidance_scale": 3.0,
+    "negative_prompt": "",
+    "num_images_per_prompt": 1,
+    "generator": null,
+    "latents": null,
+    "prompt_embeds": null,
+    "prompt_attention_mask": null,
+    "negative_prompt_embeds": null,
+    "negative_prompt_attention_mask": null,
+    "max_sequence_length": 4096,
+    "output_type": "pil",
+    "return_dict": true,
+    "uncond_skip_layers": [
+      22
+    ],
+    "slg_layers": null,
+    "slg_scale": 0.0,
+    "slg_start": 0.0,
+    "slg_stop": 1.0,
+    "prompt": null
+  },
+  "official_scheduler_defaults_from_ast": {
+    "num_train_timesteps": 1000,
+    "shift": 5.0,
+    "training_shift": 1.0
+  },
+  "runtime_forwarding_verified": {
+    "height": "height",
+    "width": "width",
+    "num_inference_steps": "steps",
+    "guidance_scale": "cfg",
+    "num_images_per_prompt": "batch_size",
+    "uncond_skip_layers": "skip",
+    "slg_layers": "slg",
+    "slg_scale": "slg_scale",
+    "slg_start": "slg_start",
+    "slg_stop": "slg_stop",
+    "generator": "torch.Generator('cpu').manual_seed(seed)",
+    "output_type": "'latent'"
+  },
+  "shared_official_files_verified": [
+    "text_encoder/config.json",
+    "text_encoder/model-00001-of-00004.safetensors",
+    "text_encoder/model-00002-of-00004.safetensors",
+    "text_encoder/model-00003-of-00004.safetensors",
+    "text_encoder/model-00004-of-00004.safetensors",
+    "text_encoder/model.safetensors.index.json",
+    "tokenizer/chat_template.jinja",
+    "tokenizer/tokenizer.json",
+    "tokenizer/tokenizer_config.json",
+    "vae/config.json",
+    "vae/diffusion_pytorch_model.safetensors"
+  ],
+  "workflows": [
+    {
+      "variant": "base",
+      "all_values_match_pinned_official_defaults": true,
+      "gui_sha256": "60b83ba40e73fbba01c4b33c00e0a9aa3f686f3f9aed4a92b55e9b545602251e",
+      "sampler": {
+        "dit": [
+          "1",
+          0
+        ],
+        "conditioning": [
+          "4",
+          0
+        ],
+        "seed": 42,
+        "steps": 50,
+        "cfg": 3.0,
+        "shift": 5.0,
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1,
+        "uncond_skip_layers": "22",
+        "slg_layers": "",
+        "slg_scale": 0.0,
+        "slg_start": 0.0,
+        "slg_stop": 1.0
+      }
+    },
+    {
+      "variant": "sft",
+      "all_values_match_pinned_official_defaults": true,
+      "gui_sha256": "5ab138bb790dadb312a009b23f6dd34d0610d8ea90f84891314c62de71eddde3",
+      "sampler": {
+        "dit": [
+          "1",
+          0
+        ],
+        "conditioning": [
+          "4",
+          0
+        ],
+        "seed": 42,
+        "steps": 50,
+        "cfg": 3.0,
+        "shift": 5.0,
+        "width": 1024,
+        "height": 1024,
+        "batch_size": 1,
+        "uncond_skip_layers": "22",
+        "slg_layers": "",
+        "slg_scale": 0.0,
+        "slg_start": 0.0,
+        "slg_stop": 1.0
+      }
+    }
+  ],
+  "independent_models": [
+    {
+      "file": "diffusion_models/moss-image-base-bf16.safetensors",
+      "sha256": "dc5f8ef21e31dc4ecae3e74d3fcd22bd6cb4ddc5373448d40e7936a737d93feb",
+      "bytes": 10164665280,
+      "component": "transformer",
+      "official_config_matches": true,
+      "source_revision": "5f40f07a304541840b6019d2d34d30f966756787",
+      "raw_tensor_audit": {
+        "tensor_count": 463,
+        "source_shard_count": 3,
+        "compared_tensor_bytes": 10164617280,
+        "all_shapes_dtypes_and_tensor_bytes_equal": true
+      }
+    },
+    {
+      "file": "diffusion_models/moss-image-sft-bf16.safetensors",
+      "sha256": "93d4ccbcd91cef93c5ea93d9de9d8d4f94cefbd02134e5ed21326fa026226f6c",
+      "bytes": 10164665272,
+      "component": "transformer",
+      "official_config_matches": true,
+      "source_revision": "daf706d2e1c7a6369c17b6d1658671aee6db1ebe",
+      "raw_tensor_audit": {
+        "tensor_count": 463,
+        "source_shard_count": 3,
+        "compared_tensor_bytes": 10164617280,
+        "all_shapes_dtypes_and_tensor_bytes_equal": true
+      }
+    },
+    {
+      "file": "text_encoders/moss-image-qwen35-bf16.safetensors",
+      "sha256": "1cb2c3fb5a2c469033f7688e1626314ada560620027219a9c8290cdecab2ca13",
+      "bytes": 16785482912,
+      "component": "text_encoder",
+      "official_config_matches": true,
+      "source_revision": "5f40f07a304541840b6019d2d34d30f966756787",
+      "raw_tensor_audit": {
+        "tensor_count": 759,
+        "source_shard_count": 4,
+        "compared_tensor_bytes": 16785390048,
+        "all_shapes_dtypes_and_tensor_bytes_equal": true
+      }
+    },
+    {
+      "file": "vae/moss-image-vae.safetensors",
+      "sha256": "56e130263bb955e1bdf535673b723b2ff3a95d05bfa1433a7f4355845d67021c",
+      "bytes": 249522340,
+      "component": "vae",
+      "official_config_matches": true,
+      "source_revision": "5f40f07a304541840b6019d2d34d30f966756787",
+      "raw_tensor_audit": {
+        "tensor_count": 251,
+        "source_shard_count": 1,
+        "compared_tensor_bytes": 249493396,
+        "all_shapes_dtypes_and_tensor_bytes_equal": true
+      }
+    }
+  ]
+}

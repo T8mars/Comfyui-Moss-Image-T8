@@ -1,0 +1,426 @@
+[
+  {
+    "method": "file-input",
+    "variant": "sft",
+    "extension": "json",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "file-input",
+    "variant": "sft",
+    "extension": "png",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "file-input",
+    "variant": "base",
+    "extension": "json",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "file-input",
+    "variant": "base",
+    "extension": "png",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "canvas-drop",
+    "variant": "sft",
+    "extension": "json",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "canvas-drop",
+    "variant": "sft",
+    "extension": "png",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "canvas-drop",
+    "variant": "base",
+    "extension": "json",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  },
+  {
+    "method": "canvas-drop",
+    "variant": "base",
+    "extension": "png",
+    "input": [
+      {
+        "id": "comfy-file-input",
+        "accept": ".png,.webp,.svg,.avif,.mp3,.ogg,.flac,.mp4,.mov,.m4v,.webm,.glb,.json,.latent,.safetensors,image/png,image/webp,image/svg+xml,image/avif,audio/mpeg,audio/ogg,audio/flac,audio/x-flac,video/mp4,video/quicktime,video/x-m4v,video/webm,model/gltf-binary,application/json"
+      },
+      {
+        "id": "",
+        "accept": ".json"
+      }
+    ],
+    "all_node_inputs_exact": true,
+    "nodes": [
+      {
+        "id": "1",
+        "type": "MOSSOfficialDiffusionLoader",
+        "has_errors": false
+      },
+      {
+        "id": "2",
+        "type": "MOSSOfficialTextEncoderLoader",
+        "has_errors": false
+      },
+      {
+        "id": "3",
+        "type": "MOSSOfficialVAELoader",
+        "has_errors": false
+      },
+      {
+        "id": "4",
+        "type": "MOSSOfficialTextEncode",
+        "has_errors": false
+      },
+      {
+        "id": "5",
+        "type": "MOSSOfficialSampler",
+        "has_errors": false
+      },
+      {
+        "id": "6",
+        "type": "MOSSOfficialVAEDecode",
+        "has_errors": false
+      },
+      {
+        "id": "7",
+        "type": "SaveImage",
+        "has_errors": false
+      }
+    ]
+  }
+]

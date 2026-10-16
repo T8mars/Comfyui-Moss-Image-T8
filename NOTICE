@@ -1,0 +1,9 @@
+This project includes pipeline_moss_image.py from OpenMOSS-Team/MOSS-Image-Base.
+Upstream: https://huggingface.co/OpenMOSS-Team/MOSS-Image-Base
+Revision: 5f40f07a304541840b6019d2d34d30f966756787
+File SHA256: 1dac1aca9feb1bfdfc727a401e4b67d61a505d3190706d1b7d2d784f88678b31
+The SFT pipeline at revision daf706d2e1c7a6369c17b6d1658671aee6db1ebe
+is byte-for-byte identical to this file.
+Copyright OpenMOSS Team. Licensed under Apache License 2.0 (see LICENSE).
+The upstream file is unmodified. The decode expression in runtime.py is adapted
+from the final decode stage of the same upstream pipeline.

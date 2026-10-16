@@ -1,0 +1,85 @@
+{
+  "1": {
+    "class_type": "MOSSOfficialDiffusionLoader",
+    "inputs": {
+      "model_name": "moss-image-sft-bf16.safetensors",
+      "device": "auto",
+      "precision": "bf16"
+    }
+  },
+  "2": {
+    "class_type": "MOSSOfficialTextEncoderLoader",
+    "inputs": {
+      "model_name": "moss-image-qwen35-bf16.safetensors",
+      "device": "auto"
+    }
+  },
+  "3": {
+    "class_type": "MOSSOfficialVAELoader",
+    "inputs": {
+      "model_name": "moss-image-vae.safetensors",
+      "device": "auto"
+    }
+  },
+  "4": {
+    "class_type": "MOSSOfficialTextEncode",
+    "inputs": {
+      "text_encoder": [
+        "2",
+        0
+      ],
+      "positive": "A small red fox sitting in a green meadow, soft morning light, detailed fur, photography.",
+      "negative": "",
+      "max_sequence_length": 4096
+    }
+  },
+  "5": {
+    "class_type": "MOSSOfficialSampler",
+    "inputs": {
+      "dit": [
+        "1",
+        0
+      ],
+      "conditioning": [
+        "4",
+        0
+      ],
+      "seed": 42,
+      "steps": 50,
+      "cfg": 3.0,
+      "shift": 5.0,
+      "width": 1024,
+      "height": 1024,
+      "batch_size": 1,
+      "uncond_skip_layers": "22",
+      "slg_layers": "",
+      "slg_scale": 0.0,
+      "slg_start": 0.0,
+      "slg_stop": 1.0
+    }
+  },
+  "6": {
+    "class_type": "MOSSOfficialVAEDecode",
+    "inputs": {
+      "vae": [
+        "3",
+        0
+      ],
+      "latent": [
+        "5",
+        0
+      ],
+      "tiled": false
+    }
+  },
+  "7": {
+    "class_type": "SaveImage",
+    "inputs": {
+      "images": [
+        "6",
+        0
+      ],
+      "filename_prefix": "MOSS-Image-SFT"
+    }
+  }
+}

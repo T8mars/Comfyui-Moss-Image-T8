@@ -1,0 +1,32 @@
+[project]
+name = "moss-image-t8"
+version = "0.1.0"
+description = "MOSS-Image Base and SFT with the official pipeline and independent DiT, text encoder and VAE loaders."
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+dependencies = [
+    "torch>=2.9",
+    "diffusers>=0.38,<0.42",
+    "transformers>=5.3,<6",
+    "accelerate>=1.10",
+    "safetensors>=0.6",
+    "huggingface_hub>=1.0,<2",
+    "Pillow>=10",
+]
+
+[project.urls]
+Repository = "https://github.com/T8mars/Comfyui-Moss-Image-T8"
+Documentation = "https://github.com/T8mars/Comfyui-Moss-Image-T8#readme"
+"Bug Tracker" = "https://github.com/T8mars/Comfyui-Moss-Image-T8/issues"
+Models = "https://huggingface.co/t8star/Moss-Image-Comfy"
+
+[tool.comfy]
+PublisherId = "t8star"
+DisplayName = "ComfyUI MOSS-Image T8"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py310"
