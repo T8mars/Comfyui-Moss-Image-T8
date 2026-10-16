@@ -151,11 +151,12 @@ def tensor_header(path):
     return header, 8 + length
 
 
-def merge_component(directory, index_name, target, metadata, before_publish=None, cancel_event=None):
+def merge_component(directory, index_name, target, metadata, before_publish=None, cancel_event=None,
+                    weight_map=None):
     """Validate an HF index and stream its original tensor bytes into ONE file."""
     directory, target = Path(directory), Path(target)
     check_cancelled(cancel_event)
-    mapping = read_json(directory / index_name)["weight_map"]
+    mapping = read_json(directory / index_name)["weight_map"] if weight_map is None else weight_map
     if not isinstance(mapping, dict) or not mapping:
         raise ValueError("Empty/invalid weight index")
     tensors = {}
@@ -508,10 +509,9 @@ def _export_component(source, component, target, cancel_event=None):
         # Rewrite only the header to attach the original config; tensor bytes stay unchanged.
         original = source / "vae/diffusion_pytorch_model.safetensors"
         header, _ = tensor_header(original)
-        index = source / "vae/moss-export.index.json"
-        atomic_json(index, {"weight_map": {key: original.name for key in header}})
-        digest = merge_component(original.parent, index.name, target, metadata,
-                                 before_publish=pending, cancel_event=cancel_event)
+        digest = merge_component(original.parent, None, target, metadata,
+                                 before_publish=pending, cancel_event=cancel_event,
+                                 weight_map={key: original.name for key in header})
     else:
         index = "model.safetensors.index.json" if component == "text_encoder" else "diffusion_pytorch_model.safetensors.index.json"
         digest = merge_component(source / component, index, target, metadata,

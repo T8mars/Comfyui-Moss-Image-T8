@@ -84,3 +84,51 @@ def test_cli_rejects_a_shared_busy_cache_before_starting_jobs(tmp_path, monkeypa
         monkeypatch.setattr(preparation, "download_variant", lambda *a, **k: pytest.fail("Busy CLI started a download"))
         with pytest.raises(RuntimeError, match="Another MOSS-Image preparation"):
             preparation.main()
+
+
+def test_parallel_vae_exports_share_an_unchanged_verified_source(tmp_path):
+    source, _ = sources(tmp_path)
+    before = {p.relative_to(source): p.read_bytes() for p in source.rglob("*") if p.is_file()}
+    code = """
+import importlib.util, sys, time
+from pathlib import Path
+spec = importlib.util.spec_from_file_location('preparation', sys.argv[1])
+module = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(module)
+Path(sys.argv[4]).write_text('ready')
+deadline = time.monotonic() + 10
+while not Path(sys.argv[5]).exists():
+    if time.monotonic() >= deadline:
+        raise TimeoutError('Export start signal was not received')
+    time.sleep(0.01)
+module.export_component(sys.argv[2], 'vae', sys.argv[3])
+"""
+    go = tmp_path / "export-go"
+    children, targets, ready_files = [], [], []
+    try:
+        for index in range(2):
+            target = tmp_path / f"vae-{index}.safetensors"
+            ready = tmp_path / f"export-ready-{index}"
+            targets.append(target)
+            ready_files.append(ready)
+            children.append(subprocess.Popen(
+                [sys.executable, "-c", code, str(Path(preparation.__file__).resolve()),
+                 str(source), str(target), str(ready), str(go)],
+                stdout=subprocess.PIPE, stderr=subprocess.PIPE))
+        deadline = time.monotonic() + 10
+        while not all(p.exists() for p in ready_files) and time.monotonic() < deadline:
+            assert all(child.poll() is None for child in children), "Export worker exited before starting"
+            time.sleep(0.01)
+        assert all(p.exists() for p in ready_files), "Export workers did not become ready"
+        go.write_text("go")
+        for child in children:
+            stdout, stderr = child.communicate(timeout=15)
+            assert child.returncode == 0, (stdout + stderr).decode(errors="replace")
+    finally:
+        for child in children:
+            if child.poll() is None:
+                child.kill()
+                child.communicate(timeout=5)
+    assert {p.relative_to(source): p.read_bytes() for p in source.rglob("*") if p.is_file()} == before
+    for target in targets:
+        assert inspect_component(target, "vae")
